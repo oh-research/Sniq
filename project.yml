@@ -61,6 +61,11 @@ targets:
           CODE_SIGN_IDENTITY: "Developer ID Application"
         Release:
           CODE_SIGN_IDENTITY: "Developer ID Application"
+          # Notarization requires a secure timestamp and rejects the
+          # get-task-allow debug entitlement that plain `xcodebuild build`
+          # injects by default (`archive` handles both automatically).
+          OTHER_CODE_SIGN_FLAGS: "--timestamp"
+          CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
         AppStore:
           CODE_SIGN_IDENTITY: "Apple Distribution"
           PROVISIONING_PROFILE_SPECIFIER: "Sniq Mac App Store"
