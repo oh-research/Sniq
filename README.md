@@ -49,11 +49,13 @@ brew install --cask oh-research/tap/sniq
 
 ### Secondary 레이아웃 (Flip)
 
-드래그 중 **Opt (Flip)** 를 함께 누르거나, 처음부터 `Ctrl+Opt+drag` 로 시작하면 Secondary 레이아웃으로 전환됩니다. 드래그 중 Opt 를 눌렀다 뗐다 하면 Primary ↔ Secondary 가 실시간 전환됩니다 (다중 셀 선택 중에는 무시).
+- 드래그 중 **Opt (Flip)** 를 누르면 Secondary 레이아웃으로 전환 — 처음부터 `Ctrl+Opt+drag` 로 시작해도 동일
+- Opt 를 눌렀다 뗐다 하면 Primary ↔ Secondary 실시간 전환 (다중 셀 선택 중에는 무시)
 
 ### 다중 셀 스냅 (Stretch)
 
-Ctrl+drag 중 **Cmd (Stretch)** 를 추가로 누르면, 그 시점의 셀이 앵커가 되고 커서 이동에 따라 직사각형 영역이 하이라이트됩니다. 놓으면 직사각형 전체 크기로 스냅됩니다.
+- Ctrl+drag 중 **Cmd (Stretch)** 를 누르면 그 시점의 셀이 앵커가 되고, 커서 이동에 따라 직사각형 영역이 하이라이트
+- 손을 떼면 직사각형 전체 크기로 스냅
 
 ### Snaps — 단축키로 창 배치 저장
 
