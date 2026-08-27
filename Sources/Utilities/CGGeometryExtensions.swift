@@ -22,6 +22,13 @@ extension CGRect {
     }
 }
 
+extension CGPoint {
+    /// Whether both components match `other` within `tolerance` points.
+    func isApproximatelyEqual(to other: CGPoint, tolerance: CGFloat = 2) -> Bool {
+        abs(x - other.x) <= tolerance && abs(y - other.y) <= tolerance
+    }
+}
+
 extension NSScreen {
     /// NSScreen.visibleFrame (bottom-left Cocoa origin) converted to the
     /// CG coordinate space (top-left origin).

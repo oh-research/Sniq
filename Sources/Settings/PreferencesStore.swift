@@ -76,6 +76,9 @@ final class PreferencesStore: ObservableObject {
     private static func migrateLegacyGridKeysIfNeeded() {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: "primaryRows") == nil else { return }
+        // Fresh installs carry no legacy keys — seeding here would
+        // permanently shadow the @AppStorage defaults.
+        guard defaults.object(forKey: "gridRows") != nil else { return }
 
         let legacyRows = (defaults.object(forKey: "gridRows") as? Int) ?? 2
         let legacyCols = (defaults.object(forKey: "gridCols") as? Int) ?? 3

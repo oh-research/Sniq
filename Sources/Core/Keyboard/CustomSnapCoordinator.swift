@@ -82,10 +82,23 @@ final class CustomSnapCoordinator: @unchecked Sendable {
         // window already sits at any placement of this snap's ring,
         // advance one step in the snap's anchored direction (a left/top
         // snap keeps moving left/up, wrapping to the far end).
+        //
+        // Slot occupancy matches origin plus the cross-axis size only:
+        // an app whose minimum size exceeds one cell clamps the along-
+        // axis dimension (e.g. width on a small screen's 1×3), and a
+        // full-frame comparison would strand cycling at the first slot.
         let ringRects = snap.spec.stripCycle().compactMap { targetRect(for: $0, on: screen) }
-        if ringRects.count > 1,
-           let position = ringRects.firstIndex(where: { currentFrame.isApproximatelyEqual(to: $0) }) {
-            target = ringRects[(position + 1) % ringRects.count]
+        if ringRects.count > 1 {
+            let isHorizontalStrip = snap.spec.rows == 1
+            let position = ringRects.firstIndex { slot in
+                currentFrame.origin.isApproximatelyEqual(to: slot.origin)
+                    && (isHorizontalStrip
+                        ? abs(currentFrame.height - slot.height) <= 2
+                        : abs(currentFrame.width - slot.width) <= 2)
+            }
+            if let position {
+                target = ringRects[(position + 1) % ringRects.count]
+            }
         }
 
         WindowManipulator.shared.setFrame(target, for: window)
