@@ -45,14 +45,20 @@ brew install --cask oh-research/tap/sniq
 2. Primary 레이아웃 그리드 오버레이가 뜨고 커서 아래 셀이 하이라이트
 3. 손을 떼면 창이 해당 셀 크기·위치로 스냅
 
+![Grip drag snap](assets/grip.gif)
+
 ### Secondary 레이아웃 (Flip)
 
 - 드래그 중 **Opt (Flip)** 를 누르면 Secondary 레이아웃으로 전환 — 눌렀다 뗐다 하면 Primary ↔ Secondary 실시간 토글 (다중 셀 선택 중에는 무시)
+
+![Flip between layouts](assets/flip.gif)
 
 ### 다중 셀 스냅 (Stretch)
 
 - 드래그 중 **Cmd (Stretch)** 를 누르면 그 시점의 셀이 앵커가 되고, 커서 이동에 따라 직사각형 영역이 하이라이트
 - 손을 떼면 직사각형 전체 크기로 스냅
+
+![Stretch multi-cell snap](assets/stretch.gif)
 
 ### Snaps — 단축키로 창 배치 저장
 
@@ -61,6 +67,8 @@ brew install --cask oh-research/tap/sniq
 1. 메뉴바 아이콘 → **Snaps…**
 2. **Recent** 섹션에서 원하는 배치 옆 `Assign shortcut…` 클릭 → 원하는 키 조합 누름
 3. 그 배치가 **Saved** 섹션으로 이동하고, 이후 어디서든 그 단축키를 누르면 포커스 창이 해당 자리로 이동
+
+![Saved snap shortcuts](assets/snaps.gif)
 
 1×n / n×1 (스트립) 그리드의 단축키는 **연타하면 창이 정박 방향으로 한 칸씩 순환**합니다 (끝에서 반대편으로 wrap).
 
