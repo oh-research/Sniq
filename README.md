@@ -12,7 +12,7 @@ Sniq 은 **두 개의 레이아웃을 미리 정의해두고 드래그 중 키 �
 
 ## 특징
 
-- **그리드 레이아웃 2개** — 예: Primary 는 2×1 (좌우 반반), Secondary 는 2×2 (사분할). 행·열은 각각 1–10 에서 자유 설정, 드래그 중 Flip 키로 두 그리드를 오가며 배치
+- **그리드 레이아웃 2개** — 기본값 Primary 1×3 (세로 삼분할), Secondary 2×2 (사분할). 행·열은 각각 1–10 에서 자유 설정, 드래그 중 Flip 키로 두 그리드를 오가며 배치
 - **창 어디든 드래그** — 타이틀바/바디 구분 없음. 드래그 중 그리드 오버레이에서 커서 위치 셀이 파란 채움으로 강조됨
 - **다중 셀 스냅** — Stretch 키로 여러 셀을 묶어 직사각형 영역에 스냅
 - **Snaps (단축키로 저장된 창 배치)** — 드래그로 만든 배치에 단축키를 할당해서 다음부터는 키 하나로 창 이동. 1×n / n×1 그리드에선 같은 키 연타로 창이 한 칸씩 순환
@@ -117,32 +117,10 @@ Sniq 은 두 가지 macOS 권한이 필요합니다:
 
 | 사용 환경 | Primary | Secondary |
 |---|---|---|
-| 일반 노트북 | 2×1 (좌우 반반) | 2×2 (사분할) |
-| 울트라와이드 | 3×1 | 3×2 |
-| 세로 모니터 | 1×2 | 1×3 |
-| 개발 | 3×1 (코드·브라우저·터미널) | 2×2 |
-
-## 소스에서 빌드
-
-macOS 15+ 및 Swift 6 이 필요합니다.
-
-빠른 개발 실행 (SPM):
-
-```bash
-git clone https://github.com/oh-research/Sniq.git
-cd Sniq/Sniq
-swift run
-```
-
-릴리스 빌드 + DMG (`brew install xcodegen` 필요):
-
-```bash
-./scripts/local-build.sh       # build/Sniq.app + build/sniq-X.Y.Z.dmg
-./scripts/local-install.sh     # /Applications 설치 + 실행
-./scripts/local-uninstall.sh   # 제거 (사용자 설정은 보존)
-```
-
-버전은 `Sniq/project.yml` 의 `MARKETING_VERSION` 한 곳에서 관리됩니다.
+| 일반 노트북 | 1×2 (좌우 반반) | 2×2 (사분할) |
+| 울트라와이드 | 1×3 | 2×3 |
+| 세로 모니터 | 2×1 (상하 반반) | 3×1 |
+| 개발 | 1×3 (코드·브라우저·터미널) | 2×2 |
 
 ## 요구 사항
 

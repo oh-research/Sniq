@@ -6,7 +6,7 @@ import Foundation
 /// modifier keys that fulfill that role. Determines which key combinations
 /// trigger sniq gestures.
 ///
-/// Defaults: `Grip = ⌥ Option`, `Flip = ⌃ Control`, `Stretch = ⌘ Command`.
+/// Defaults: `Grip = ⌃ Control`, `Flip = ⌥ Option`, `Stretch = ⌘ Command`.
 /// Grip is the one modifier that must be held for a drag to be claimed;
 /// Flip and Stretch are optional add-ons pressed alongside Grip to switch
 /// layouts or select multi-cell regions. The user may rebind any of the
@@ -18,8 +18,8 @@ struct ModifierBindings: Equatable, Sendable {
     var stretch: PressedModifiers
 
     static let `default` = ModifierBindings(
-        grip:    .option,
-        flip:    .control,
+        grip:    .control,
+        flip:    .option,
         stretch: .command
     )
 
