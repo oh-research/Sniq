@@ -1,0 +1,96 @@
+# Sniq Snaps — version 1
+# Preset: Default shortcuts (Rectangle-compatible scheme, ⌃⌥ + ...)
+#
+# Format
+#   [snap]
+#   grid     = <rows>x<cols>                e.g. 3x2
+#   region   = <r>,<c>  or  <r>,<c> -> <r>,<c>   (0-based cell index)
+#   shortcut = <mod>+...+<key>              case-insensitive, `+` or space
+#
+# Modifiers:     cmd, ctrl, opt (= alt), shift
+# Letter keys:   a..z
+# Digit keys:    0..9
+# Arrow keys:    left, right, up, down
+# Function keys: f1..f12
+# Special keys:  space, tab, return, esc, delete,
+#                pageup, pagedown, home, end
+
+# --- Halves ---
+
+[snap]
+grid     = 1x2
+region   = 0,0
+shortcut = ctrl+opt+left
+
+[snap]
+grid     = 1x2
+region   = 0,1
+shortcut = ctrl+opt+right
+
+[snap]
+grid     = 2x1
+region   = 0,0
+shortcut = ctrl+opt+up
+
+[snap]
+grid     = 2x1
+region   = 1,0
+shortcut = ctrl+opt+down
+
+# --- Quarters ---
+
+[snap]
+grid     = 2x2
+region   = 0,0
+shortcut = ctrl+opt+u
+
+[snap]
+grid     = 2x2
+region   = 0,1
+shortcut = ctrl+opt+i
+
+[snap]
+grid     = 2x2
+region   = 1,0
+shortcut = ctrl+opt+j
+
+[snap]
+grid     = 2x2
+region   = 1,1
+shortcut = ctrl+opt+k
+
+# --- Maximize ---
+
+[snap]
+grid     = 1x1
+region   = 0,0
+shortcut = ctrl+opt+return
+
+# --- Thirds ---
+
+[snap]
+grid     = 1x3
+region   = 0,0
+shortcut = ctrl+opt+d
+
+[snap]
+grid     = 1x3
+region   = 0,1
+shortcut = ctrl+opt+f
+
+[snap]
+grid     = 1x3
+region   = 0,2
+shortcut = ctrl+opt+g
+
+# --- Two Thirds ---
+
+[snap]
+grid     = 1x3
+region   = 0,0 -> 0,1
+shortcut = ctrl+opt+e
+
+[snap]
+grid     = 1x3
+region   = 0,1 -> 0,2
+shortcut = ctrl+opt+t

@@ -65,6 +65,22 @@ enum SnapIO {
         promptApply(result: result, filename: url.lastPathComponent)
     }
 
+    /// Loads the bundled default shortcut set (Rectangle-compatible
+    /// scheme). Offered by the Saved section's empty state, so append
+    /// never collides and the list filling in is feedback enough.
+    static func loadDefaults() {
+        guard let url = Bundle.main.url(forResource: "DefaultSnaps", withExtension: "sniq"),
+              let text = try? String(contentsOf: url, encoding: .utf8)
+        else {
+            showAlert(
+                title: "Load failed",
+                message: "The bundled default shortcut set is missing."
+            )
+            return
+        }
+        _ = SnapStore.shared.append(SnapFile.parse(text).snaps)
+    }
+
     // MARK: - Apply prompt
 
     private static func promptApply(result: SnapFile.ParseResult, filename: String) {

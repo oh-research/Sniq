@@ -73,10 +73,20 @@ struct SnapsWindowView: View {
     private var savedSection: some View {
         GroupBox(label: savedHeader) {
             if store.snaps.isEmpty {
-                EmptyStateRow(
-                    systemImage: "square.dashed",
-                    text: "Click + to add a snap, or assign a shortcut to a recent snap."
-                )
+                VStack(alignment: .leading, spacing: 2) {
+                    EmptyStateRow(
+                        systemImage: "square.dashed",
+                        text: "Click + to add a snap, or assign a shortcut to a recent snap."
+                    )
+                    Button {
+                        SnapIO.loadDefaults()
+                    } label: {
+                        Label("Load default shortcuts", systemImage: "sparkles")
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.bottom, 8)
+                    .help("Adds the Rectangle-style starter set: ⌃⌥ arrows for halves, U/I/J/K for quarters, Return to maximize")
+                }
             } else {
                 ScrollView {
                     VStack(spacing: 4) {
