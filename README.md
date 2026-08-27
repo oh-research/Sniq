@@ -49,8 +49,7 @@ brew install --cask oh-research/tap/sniq
 
 ### Secondary 레이아웃 (Flip)
 
-- 드래그 중 **Opt (Flip)** 를 누르면 Secondary 레이아웃으로 전환 — 처음부터 `Ctrl+Opt+drag` 로 시작해도 동일
-- Opt 를 눌렀다 뗐다 하면 Primary ↔ Secondary 실시간 전환 (다중 셀 선택 중에는 무시)
+- 드래그 중 **Opt (Flip)** 를 누르면 Secondary 레이아웃으로 전환 — 눌렀다 뗐다 하면 Primary ↔ Secondary 실시간 토글 (다중 셀 선택 중에는 무시)
 
 ### 다중 셀 스냅 (Stretch)
 
