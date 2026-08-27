@@ -38,8 +38,6 @@ brew install --cask oh-research/tap/sniq
 2. `Sniq.app` 을 `/Applications` 로 드래그
 3. 앱 실행 → **How to Use...** 창이 사용법과 권한 설정을 안내합니다
 
-앱은 Developer ID 서명 + 공증(notarization)이 되어 있어 별도의 Gatekeeper 우회가 필요 없습니다.
-
 ## 사용법
 
 ### 드래그로 스냅
