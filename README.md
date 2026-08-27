@@ -18,7 +18,7 @@ macOS 기본 스냅은 화면 반반 정도만 지원합니다. Sniq 은 **두 �
 - **다중 셀 스냅** — Stretch 키로 여러 셀을 묶어 직사각형 영역에 스냅
 - **Snaps (단축키로 저장된 창 배치)** — 드래그로 만든 배치에 단축키를 할당해서 다음부터는 키 하나로 창 이동. 1×n / n×1 그리드에선 같은 키 연타로 창이 한 칸씩 순환
 - **`.sniq` 파일 Import / Export** — 사람이 읽을 수 있는 INI 포맷. 드래그앤드롭으로도 가져올 수 있음
-- **기본 단축키 세트 내장** — 빈 Snaps 창에서 **Load default shortcuts** 클릭 한 번으로 Rectangle 호환 14종 등록 (Magnet 배열은 `presets/Magnet.sniq` import)
+- **기본 단축키 세트 내장** — 빈 Snaps 창에서 **Load default shortcuts** 클릭 한 번으로 14종 등록 (Rectangle / Magnet 기본 단축키와 동일한 스킴)
 - **Modifier 재바인딩** — 기본값 (Grip=⌃ / Flip=⌥ / Stretch=⌘) 이 불편하면 Settings 에서 자유롭게 교체
 - **메뉴바 앱** — Dock 아이콘 없음. 다크/라이트 메뉴바 자동 대응
 - **로그인 시 자동 실행** 지원
@@ -85,7 +85,7 @@ region   = 0,0 -> 0,1
 shortcut = ctrl+opt+shift+L
 ```
 
-기본 14종 세트는 빈 Snaps 창의 **Load default shortcuts** 버튼으로 바로 등록할 수 있고, 레포 `presets/` 의 **Rectangle / Magnet** 배열은 import 로 가져올 수 있습니다.
+기본 14종 세트 (Rectangle / Magnet 기본 단축키와 동일한 스킴) 는 빈 Snaps 창의 **Load default shortcuts** 버튼으로 바로 등록할 수 있습니다.
 
 ## 권한
 
