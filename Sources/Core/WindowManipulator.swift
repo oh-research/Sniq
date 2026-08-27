@@ -34,41 +34,14 @@ final class WindowManipulator: Sendable {
         return posOK && sizeOK
     }
 
-    /// Moves `element` to `position` (CG coordinate system).
-    @discardableResult
-    func setPosition(_ position: CGPoint, for element: AXUIElement) -> Bool {
-        guard isValid(element) else { return false }
-        return writePosition(position, for: element)
-    }
-
-    /// Resizes `element` to `size`.
-    @discardableResult
-    func setSize(_ size: CGSize, for element: AXUIElement) -> Bool {
-        guard isValid(element) else { return false }
-        return writeSize(size, for: element)
-    }
-
-    // MARK: - Validation
-
-    /// Returns false if the AX element is no longer usable (e.g. window was closed).
-    func isValid(_ element: AXUIElement) -> Bool {
-        var roleRef: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
-        // kAXErrorInvalidUIElement or kAXErrorAPIDisabled indicate the element is gone.
-        return result != .invalidUIElement && result != .apiDisabled
-    }
-
     // MARK: - Private helpers
 
-    /// Writes a position without re-validating the element. Used by
-    /// `setFrame`, which already validated once at entry.
     private func writePosition(_ position: CGPoint, for element: AXUIElement) -> Bool {
         var point = position
         guard let value = AXValueCreate(.cgPoint, &point) else { return false }
         return AXUIElementSetAttributeValue(element, kAXPositionAttribute as CFString, value) == .success
     }
 
-    /// Writes a size without re-validating the element.
     private func writeSize(_ size: CGSize, for element: AXUIElement) -> Bool {
         var sz = size
         guard let value = AXValueCreate(.cgSize, &sz) else { return false }

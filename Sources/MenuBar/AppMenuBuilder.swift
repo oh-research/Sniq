@@ -6,7 +6,7 @@ import Cocoa
 @MainActor
 enum AppMenuBuilder {
 
-    /// Replaces `menu`'s items with the current snapshot-aware layout.
+    /// Replaces `menu`'s items with the current snap-aware layout.
     /// `target` receives all `@objc` actions; `errorMessage` adds a
     /// disabled status line at the top when non-nil.
     static func rebuild(
@@ -16,9 +16,9 @@ enum AppMenuBuilder {
     ) {
         menu.removeAllItems()
         appendErrorBanner(to: menu, message: errorMessage)
-        appendEnabledToggle(to: menu, target: target)
+        appendPauseToggle(to: menu, target: target)
         menu.addItem(.separator())
-        appendSnapshotItems(to: menu, target: target)
+        appendSnapItems(to: menu, target: target)
         menu.addItem(.separator())
         appendAppItems(to: menu, target: target)
         menu.addItem(.separator())
@@ -35,21 +35,20 @@ enum AppMenuBuilder {
         menu.addItem(.separator())
     }
 
-    private static func appendEnabledToggle(to menu: NSMenu, target: StatusBarController) {
+    private static func appendPauseToggle(to menu: NSMenu, target: StatusBarController) {
         let item = NSMenuItem(
-            title: "Enabled",
-            action: #selector(StatusBarController.toggleEnabled(_:)),
+            title: PauseState.isPaused ? "Resume Sniq" : "Pause Sniq",
+            action: #selector(StatusBarController.togglePause(_:)),
             keyEquivalent: ""
         )
         item.target = target
-        item.state = PreferencesStore.shared.isEnabled ? .on : .off
         menu.addItem(item)
     }
 
-    private static func appendSnapshotItems(to menu: NSMenu, target: StatusBarController) {
+    private static func appendSnapItems(to menu: NSMenu, target: StatusBarController) {
         let item = NSMenuItem(
-            title: "Snapshots…",
-            action: #selector(StatusBarController.openSnapshots(_:)),
+            title: "Snaps…",
+            action: #selector(StatusBarController.openSnaps(_:)),
             keyEquivalent: ""
         )
         item.target = target

@@ -2,9 +2,7 @@
 import ApplicationServices
 
 /// Queries the accessibility tree for the currently focused window of the
-/// frontmost application. Text-focus detection has moved to
-/// `TextFocusMonitor` so that the hot keyboard path no longer pays for a
-/// synchronous AX round-trip.
+/// frontmost application.
 enum FocusedWindowDetector {
 
     /// Returns the focused window of the frontmost application, or `nil`

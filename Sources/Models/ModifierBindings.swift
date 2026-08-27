@@ -6,19 +6,20 @@ import Foundation
 /// modifier keys that fulfill that role. Determines which key combinations
 /// trigger sniq gestures.
 ///
-/// Defaults: the core "grab the window" modifier is Shift so the mouse
-/// gesture unifies under `Shift+drag anywhere` (previously split between
-/// `Shift+titlebar` native drag and a separate Opt+anywhere gesture).
-/// Physical keyboard shortcut `Shift+Opt+Arrow` is unchanged — only the
-/// role assignment swapped (now `Grip=Shift, Stretch=Opt`).
+/// Defaults: `Grip = ⌥ Option`, `Flip = ⌃ Control`, `Stretch = ⌘ Command`.
+/// Grip is the one modifier that must be held for a drag to be claimed;
+/// Flip and Stretch are optional add-ons pressed alongside Grip to switch
+/// layouts or select multi-cell regions. The user may rebind any of the
+/// three in Settings — in-app / marketing copy reads the current binding
+/// via `PreferencesStore.bindings.<role>.formatted`.
 struct ModifierBindings: Equatable, Sendable {
     var grip: PressedModifiers
     var flip: PressedModifiers
     var stretch: PressedModifiers
 
     static let `default` = ModifierBindings(
-        grip: .control,
-        flip: .option,
+        grip:    .option,
+        flip:    .control,
         stretch: .command
     )
 

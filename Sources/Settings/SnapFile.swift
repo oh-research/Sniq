@@ -1,29 +1,29 @@
 import Foundation
 
-// MARK: - SnapshotFile
+// MARK: - SnapFile
 
 /// Reads and writes sniq's human-editable `.sniq` format — a forgiving
-/// INI variant with `[snapshot]` sections and `key = value` lines.
+/// INI variant with `[snap]` sections and `key = value` lines.
 /// Keeps errors line-numbered so the Import UI can point at exactly
 /// what went wrong.
-enum SnapshotFile {
+enum SnapFile {
 
     // MARK: - Serialization
 
-    /// Produces the full `.sniq` file contents for `snapshots`, prefixed
+    /// Produces the full `.sniq` file contents for `snaps`, prefixed
     /// by a header comment documenting the format.
-    static func serialize(_ snapshots: [Snapshot]) -> String {
+    static func serialize(_ snaps: [Snap]) -> String {
         var output = header
-        for snapshot in snapshots {
+        for snap in snaps {
             output += "\n"
-            output += section(for: snapshot)
+            output += section(for: snap)
         }
         return output
     }
 
-    private static func section(for snapshot: Snapshot) -> String {
-        let spec = snapshot.spec
-        var lines = ["[snapshot]"]
+    private static func section(for snap: Snap) -> String {
+        let spec = snap.spec
+        var lines = ["[snap]"]
         lines.append("grid     = \(spec.rows)x\(spec.cols)")
         if spec.minCell == spec.maxCell {
             lines.append("region   = \(spec.minCell.row),\(spec.minCell.col)")
@@ -33,13 +33,15 @@ enum SnapshotFile {
                 "\(spec.maxCell.row),\(spec.maxCell.col)"
             )
         }
-        lines.append("shortcut = \(snapshot.shortcut.sniqString)")
+        if let shortcut = snap.shortcut {
+            lines.append("shortcut = \(shortcut.sniqString)")
+        }
         return lines.joined(separator: "\n") + "\n"
     }
 
     // MARK: - Parsing
 
-    /// Parses the `.sniq` text into a list of snapshots plus a list of
+    /// Parses the `.sniq` text into a list of snaps plus a list of
     /// per-block errors that callers can show to the user. Bad blocks
     /// are skipped so a single typo doesn't kill the whole import.
     static func parse(_ text: String) -> ParseResult {
@@ -48,7 +50,7 @@ enum SnapshotFile {
     }
 
     struct ParseResult {
-        var snapshots: [Snapshot]
+        var snaps: [Snap]
         var issues: [Issue]
     }
 
@@ -60,10 +62,10 @@ enum SnapshotFile {
     // MARK: - Header (written by `serialize`, ignored by parser)
 
     private static let header = """
-        # Sniq Snapshots — version 1
+        # Sniq Snaps — version 1
         #
         # Format
-        #   [snapshot]
+        #   [snap]
         #   grid     = <rows>x<cols>                e.g. 3x2
         #   region   = <r>,<c>  or  <r>,<c> -> <r>,<c>   (0-based cell index)
         #   shortcut = <mod>+...+<key>              case-insensitive, `+` or space
@@ -89,8 +91,8 @@ private struct SniqParser {
 
     let text: String
 
-    private var snapshots: [Snapshot] = []
-    private var issues: [SnapshotFile.Issue] = []
+    private var snaps: [Snap] = []
+    private var issues: [SnapFile.Issue] = []
 
     private var current: Block?
 
@@ -98,7 +100,7 @@ private struct SniqParser {
         self.text = text
     }
 
-    mutating func run() -> SnapshotFile.ParseResult {
+    mutating func run() -> SnapFile.ParseResult {
         for (index, rawLine) in text.split(
             separator: "\n", omittingEmptySubsequences: false
         ).enumerated() {
@@ -109,7 +111,9 @@ private struct SniqParser {
             if line.hasPrefix("[") && line.hasSuffix("]") {
                 commitCurrent()
                 let name = line.dropFirst().dropLast().trimmingCharacters(in: .whitespaces)
-                if name == "snapshot" {
+                // `[snapshot]` is the legacy section name from sniq ≤ 1.3.
+                // Accepted silently so older export files still import.
+                if name == "snap" || name == "snapshot" {
                     current = Block(startLine: lineNumber)
                 } else {
                     issues.append(.init(line: lineNumber, message: "unknown section \"[\(name)]\""))
@@ -128,7 +132,7 @@ private struct SniqParser {
             guard current != nil else {
                 issues.append(.init(
                     line: lineNumber,
-                    message: "\(key) outside of a [snapshot] block"
+                    message: "\(key) outside of a [snap] block"
                 ))
                 continue
             }
@@ -145,7 +149,7 @@ private struct SniqParser {
             }
         }
         commitCurrent()
-        return .init(snapshots: snapshots, issues: issues)
+        return .init(snaps: snaps, issues: issues)
     }
 
     // MARK: - Field application
@@ -217,15 +221,11 @@ private struct SniqParser {
         current = nil
 
         guard let rows = block.rows, let cols = block.cols else {
-            issues.append(.init(line: block.startLine, message: "[snapshot] missing `grid`"))
+            issues.append(.init(line: block.startLine, message: "[snap] missing `grid`"))
             return
         }
         guard let minCell = block.minCell, let maxCell = block.maxCell else {
-            issues.append(.init(line: block.startLine, message: "[snapshot] missing `region`"))
-            return
-        }
-        guard let shortcut = block.shortcut else {
-            issues.append(.init(line: block.startLine, message: "[snapshot] missing `shortcut`"))
+            issues.append(.init(line: block.startLine, message: "[snap] missing `region`"))
             return
         }
         guard maxCell.row < rows, maxCell.col < cols else {
@@ -236,7 +236,7 @@ private struct SniqParser {
             return
         }
         let spec = SnapSpec(rows: rows, cols: cols, minCell: minCell, maxCell: maxCell)
-        snapshots.append(Snapshot(spec: spec, shortcut: shortcut))
+        snaps.append(Snap(spec: spec, shortcut: block.shortcut))
     }
 
     private struct Block {

@@ -10,8 +10,21 @@ extension NSScreen {
     }
 }
 
+extension CGRect {
+    /// Whether origin and size both match `other` within `tolerance`
+    /// points per component — loose enough to absorb AX rounding after
+    /// a previous snap.
+    func isApproximatelyEqual(to other: CGRect, tolerance: CGFloat = 2) -> Bool {
+        abs(minX - other.minX) <= tolerance
+            && abs(minY - other.minY) <= tolerance
+            && abs(width - other.width) <= tolerance
+            && abs(height - other.height) <= tolerance
+    }
+}
+
 extension NSScreen {
-    /// NSScreen.visibleFrame (Cocoa 좌하단 원점) → CG 좌표계 (좌상단 원점) 변환
+    /// NSScreen.visibleFrame (bottom-left Cocoa origin) converted to the
+    /// CG coordinate space (top-left origin).
     var visibleFrameCG: CGRect {
         guard let primary = NSScreen.screens.first else { return visibleFrame }
         let primaryHeight = primary.frame.height
@@ -23,7 +36,8 @@ extension NSScreen {
         )
     }
 
-    /// NSScreen.frame (전체 화면, 메뉴바 포함) → CG 좌표계 (좌상단 원점) 변환
+    /// NSScreen.frame (full screen including menu bar) converted to the
+    /// CG coordinate space (top-left origin).
     var fullFrameCG: CGRect {
         guard let primary = NSScreen.screens.first else { return frame }
         let primaryHeight = primary.frame.height

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - ShortcutSpec
 
-/// A keyboard shortcut bound to a `Snapshot`. Matched inside the
+/// A keyboard shortcut bound to a `Snap`. Matched inside the
 /// CGEventTap callback by `(keyCode, modifiers)` so both fields are
 /// primitive/Sendable and serialization is trivial.
 struct ShortcutSpec: Codable, Equatable, Hashable, Sendable {

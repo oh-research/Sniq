@@ -13,7 +13,6 @@ struct RawMouseEvent: Sendable {
     let kind: Kind
     let location: CGPoint
     let modifiers: PressedModifiers
-    let timestamp: UInt64
 }
 
 // MARK: - EventMonitor
@@ -126,7 +125,6 @@ final class EventMonitor: @unchecked Sendable {
         // --- Extract only the minimum data needed (<1 ms budget) ---
         let location = event.location
         let flags = event.flags
-        let ts = mach_absolute_time()
 
         // --- Keyboard shortcut fast path: consult handler, suppress if claimed ---
         if type == .keyDown {
@@ -151,8 +149,7 @@ final class EventMonitor: @unchecked Sendable {
         let raw = RawMouseEvent(
             kind: kind,
             location: location,
-            modifiers: PressedModifiers(cgFlags: flags),
-            timestamp: ts
+            modifiers: PressedModifiers(cgFlags: flags)
         )
 
         if let mouseHandler = monitor.mouseHandler, mouseHandler(raw) {

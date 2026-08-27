@@ -24,6 +24,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         debugLog("[Sniq] launched")
+        // Wake the lazy store so SnapLookupMirror is populated before the
+        // first shortcut key event; otherwise saved snaps stay dead until
+        // the Snaps window is opened.
+        _ = SnapStore.shared
         statusBarController.setup()
         dragCoordinator.statusBarController = statusBarController
 
@@ -34,11 +38,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         debugLog("[Sniq] onboardingCompleted: \(PreferencesStore.shared.onboardingCompleted), allPermissionsGranted: \(AccessibilityManager.shared.allPermissionsGranted)")
         if !PreferencesStore.shared.onboardingCompleted || !AccessibilityManager.shared.allPermissionsGranted {
-            debugLog("[Sniq] Will show onboarding")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
-                debugLog("[Sniq] Calling showOnboarding()")
                 statusBarController.showOnboarding()
-                debugLog("[Sniq] showOnboarding() returned")
             }
         }
 
@@ -48,25 +49,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             debugLog("[Sniq] Waiting for permissions")
             AccessibilityManager.shared.startPolling()
-            startWhenTrusted()
-        }
-    }
-
-    private func startWhenTrusted() {
-        // Observe isTrusted changes
-        // Start when both permissions are granted
-        AccessibilityManager.shared.$isTrusted
-            .combineLatest(AccessibilityManager.shared.$canListenEvents)
-            .filter { $0 && $1 }
-            .first()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            // start() re-points onPermissionsChange to error display, so
+            // this fires effectively once.
+            AccessibilityManager.shared.onPermissionsChange = { [weak self] manager in
+                guard manager.allPermissionsGranted else { return }
                 self?.dragCoordinator.start()
             }
-            .store(in: &cancellables)
+        }
     }
-
-    private var cancellables = Set<AnyCancellable>()
 }
-
-import Combine

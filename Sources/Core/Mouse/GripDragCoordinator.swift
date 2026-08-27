@@ -52,8 +52,7 @@ final class GripDragCoordinator {
 
     private nonisolated func tryArm(on event: RawMouseEvent) -> Bool {
         guard event.kind == .mouseDown else { return false }
-        // `@AppStorage("isEnabled")` default is true, so an unset key = enabled.
-        guard UserDefaults.standard.object(forKey: "isEnabled") as? Bool ?? true else { return false }
+        guard !PauseState.isPaused else { return false }
 
         let bindings = ModifierBindings.load()
         let grip = bindings.grip

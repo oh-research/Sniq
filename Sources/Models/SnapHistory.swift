@@ -30,9 +30,4 @@ final class SnapHistory {
     func clear() {
         entries.removeAll()
     }
-
-    // MARK: - Convenience
-
-    /// Most recent entry — driver of the menubar "Save last snapshot…" item.
-    var top: SnapSpec? { entries.first }
 }

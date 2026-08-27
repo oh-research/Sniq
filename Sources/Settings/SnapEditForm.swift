@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Expanded-state editor for a single saved snapshot. Mutates `rows`,
+/// Expanded-state editor for a single saved snap. Mutates `rows`,
 /// `cols`, `minCell`, and `maxCell` through bindings; the parent (a
 /// saved row) persists the new spec on every change. Stepper ranges
 /// clamp so `minCell <= maxCell` and both stay inside the grid.
-struct SnapshotEditForm: View {
+struct SnapEditForm: View {
 
     @Binding var rows: Int
     @Binding var cols: Int
@@ -16,8 +16,8 @@ struct SnapshotEditForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 16) {
-                stepper("Rows", value: $rows, range: 1...10, onChange: clampCells)
-                stepper("Cols", value: $cols, range: 1...10, onChange: clampCells)
+                stepper("Rows",    value: $rows, range: 1...10, onChange: clampCells)
+                stepper("Columns", value: $cols, range: 1...10, onChange: clampCells)
             }
             HStack(spacing: 16) {
                 coordPair(label: "From", row: $minRow, col: $minCol) { clampMax() }

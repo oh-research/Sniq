@@ -12,10 +12,16 @@ final class GridOverlayView: NSView {
         didSet { needsDisplay = true }
     }
 
-    /// Cells that should be drawn with a highlight fill.
-    var highlightedCells: Set<GridCell> = [] {
+    /// Inclusive rectangular cell range drawn with a highlight fill.
+    struct HighlightRegion: Equatable {
+        var minCell: GridCell
+        var maxCell: GridCell
+    }
+
+    /// Region to highlight, or `nil` for none.
+    var highlightedRegion: HighlightRegion? {
         didSet {
-            guard highlightedCells != oldValue else { return }
+            guard highlightedRegion != oldValue else { return }
             needsDisplay = true
         }
     }
@@ -84,7 +90,7 @@ final class GridOverlayView: NSView {
         NSGraphicsContext.current?.shouldAntialias = true
 
         drawGridLines()
-        drawHighlightedCells()
+        drawHighlightedRegion()
     }
 
     private func drawGridLines() {
@@ -100,20 +106,14 @@ final class GridOverlayView: NSView {
         path.stroke()
     }
 
-    private func drawHighlightedCells() {
-        guard !highlightedCells.isEmpty else { return }
+    private func drawHighlightedRegion() {
+        guard let region = highlightedRegion,
+              region.maxCell.row < gridCells.count,
+              region.maxCell.col < (gridCells.first?.count ?? 0)
+        else { return }
 
-        // Compute the bounding union of all highlighted cells so we can draw a single
-        // continuous highlight for rectangular multi-cell selections.
-        var union: CGRect?
-        for cell in highlightedCells {
-            guard cell.row < gridCells.count,
-                  cell.col < gridCells[cell.row].count else { continue }
-            let rect = gridCells[cell.row][cell.col]
-            union = union.map { $0.union(rect) } ?? rect
-        }
-
-        guard let highlightRect = union else { return }
+        let highlightRect = gridCells[region.minCell.row][region.minCell.col]
+            .union(gridCells[region.maxCell.row][region.maxCell.col])
 
         highlightFill.setFill()
         let fillPath = NSBezierPath(rect: highlightRect)

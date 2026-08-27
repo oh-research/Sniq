@@ -1,6 +1,6 @@
 import ServiceManagement
 
-/// Wraps SMAppService to register/unregister the app as a login item.
+/// Wraps SMAppService to read and toggle the app's login-item registration.
 @MainActor
 enum LoginItemHelper {
 
@@ -8,34 +8,13 @@ enum LoginItemHelper {
         SMAppService.mainApp.status == .enabled
     }
 
-    /// Registers the app as a login item. Returns true on success.
-    @discardableResult
-    static func enable() -> Bool {
-        do {
-            try SMAppService.mainApp.register()
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    /// Unregisters the app from login items. Returns true on success.
-    @discardableResult
-    static func disable() -> Bool {
-        do {
-            try SMAppService.mainApp.unregister()
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    /// Sets the login item state to `enabled`.
+    /// Sets the login item state to `enabled`. Failures are silent — the
+    /// Settings toggle simply reads back the unchanged status.
     static func setEnabled(_ enabled: Bool) {
         if enabled {
-            enable()
+            try? SMAppService.mainApp.register()
         } else {
-            disable()
+            try? SMAppService.mainApp.unregister()
         }
     }
 }

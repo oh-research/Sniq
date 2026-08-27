@@ -11,17 +11,10 @@ final class PreferencesStore: ObservableObject {
     @AppStorage("gridGap") var gap: Double = 0
     @AppStorage("gridPadding") var padding: Double = 0
     @AppStorage("onboardingCompleted") var onboardingCompleted: Bool = false
-    @AppStorage("isEnabled") var isEnabled: Bool = true
 
     /// Role-to-modifier bindings. Readable directly by SwiftUI so labels
     /// update immediately when `updateBindings(_:)` writes new values.
     @Published private(set) var bindings: ModifierBindings = .load()
-
-    /// Mirrors the SMAppService login item state. Setting this registers/unregisters the app.
-    var launchAtLogin: Bool {
-        get { LoginItemHelper.isEnabled }
-        set { LoginItemHelper.setEnabled(newValue) }
-    }
 
     private init() {
         Self.migrateLegacyGridKeysIfNeeded()
@@ -65,14 +58,15 @@ final class PreferencesStore: ObservableObject {
     /// row/col swap of the legacy value so users immediately see a meaningful
     /// difference when holding Opt. Legacy keys are left in place as a rollback
     /// safety net.
-    /// Drops UserDefaults keys from pre-Snapshot builds so the old
-    /// ⇧⌥+arrow keyboard shortcut toggles don't linger. Silent — users
-    /// upgrading from v1.2.0 shouldn't see a prompt.
+    /// Drops UserDefaults keys retired by later builds (pre-Snap
+    /// keyboard toggles, the persisted enable switch replaced by the
+    /// session-scoped `PauseState`). Silent — upgrades shouldn't prompt.
     private static func purgeRetiredKeys() {
         let defaults = UserDefaults.standard
         let retired = [
             "keyboardSnapEnabled",
             "keyboardSnapInterceptInTextFields",
+            "isEnabled",
         ]
         for key in retired {
             defaults.removeObject(forKey: key)

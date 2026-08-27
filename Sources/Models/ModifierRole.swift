@@ -8,7 +8,7 @@
 /// - `flip`:    switches from primary to secondary grid layout
 /// - `stretch`: qualifier required for keyboard arrow snap (and for
 ///              mouse resize in later milestones)
-enum ModifierRole: String, CaseIterable, Codable, Sendable {
+enum ModifierRole: String, CaseIterable, Sendable {
     case grip
     case flip
     case stretch
@@ -27,7 +27,7 @@ enum ModifierRole: String, CaseIterable, Codable, Sendable {
 
 /// A single physical modifier key on the Mac keyboard. Used for
 /// Settings UI rendering and for translating user-visible labels.
-enum ModifierKey: String, CaseIterable, Codable, Sendable {
+enum ModifierKey: String, CaseIterable, Sendable {
     case shift
     case control
     case option

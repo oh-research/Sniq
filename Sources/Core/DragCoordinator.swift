@@ -1,5 +1,4 @@
 @preconcurrency import Cocoa
-import Combine
 
 /// Owns the shared `EventMonitor` and wires the keyboard- and Grip-drag
 /// coordinators into it. Surfaces accessibility-permission errors on the
@@ -10,7 +9,6 @@ import Combine
 final class DragCoordinator {
 
     private let eventMonitor = EventMonitor()
-    private var cancellables = Set<AnyCancellable>()
 
     /// Injected by AppDelegate so permission errors can be shown in the menu bar.
     weak var statusBarController: StatusBarController?
@@ -35,24 +33,22 @@ final class DragCoordinator {
         GripDragCoordinator.shared.unwire(from: eventMonitor)
         CustomSnapCoordinator.shared.unwire(from: eventMonitor)
         eventMonitor.stop()
-        cancellables.removeAll()
+        AccessibilityManager.shared.onPermissionsChange = nil
     }
 
     // MARK: - Accessibility observation
 
     private func observeAccessibility() {
-        AccessibilityManager.shared.$isTrusted
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] trusted in
-                guard let self else { return }
-                if trusted {
-                    self.statusBarController?.clearError()
-                } else {
-                    self.statusBarController?.showError(
-                        "Accessibility permission required for window snapping."
-                    )
-                }
+        let showPermissionState: (AccessibilityManager) -> Void = { [weak self] manager in
+            if manager.isTrusted {
+                self?.statusBarController?.clearError()
+            } else {
+                self?.statusBarController?.showError(
+                    "Accessibility permission required for window snapping."
+                )
             }
-            .store(in: &cancellables)
+        }
+        AccessibilityManager.shared.onPermissionsChange = showPermissionState
+        showPermissionState(AccessibilityManager.shared)
     }
 }

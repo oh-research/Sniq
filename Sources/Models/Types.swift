@@ -12,8 +12,6 @@ struct GridConfiguration: Equatable, Sendable {
     var cols: Int
     var gap: CGFloat
     var padding: CGFloat
-
-    static let `default` = GridConfiguration(rows: 2, cols: 3, gap: 0, padding: 0)
 }
 
 /// Identifies which of the two configurable layouts is currently active.

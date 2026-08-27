@@ -1,16 +1,22 @@
 @preconcurrency import Cocoa
-import Combine
+import Observation
 
-@MainActor
-final class AccessibilityManager: ObservableObject {
+@Observable @MainActor
+final class AccessibilityManager {
     static let shared = AccessibilityManager()
 
-    @Published private(set) var isTrusted: Bool = false
-    @Published private(set) var canListenEvents: Bool = false
+    private(set) var isTrusted: Bool = false
+    private(set) var canListenEvents: Bool = false
+
+    /// Single observer slot, invoked on the main actor after permission
+    /// values are refreshed. AppDelegate uses it to start the coordinators
+    /// once permissions arrive; `DragCoordinator.start()` then takes the
+    /// slot over for menu-bar error display. Last writer wins by design.
+    @ObservationIgnored var onPermissionsChange: ((AccessibilityManager) -> Void)?
 
     // MARK: - Permission polling
 
-    private var pollingTimer: Timer?
+    @ObservationIgnored private var pollingTimer: Timer?
 
     var allPermissionsGranted: Bool {
         isTrusted && canListenEvents
@@ -19,6 +25,7 @@ final class AccessibilityManager: ObservableObject {
     func checkPermission() {
         isTrusted = AXIsProcessTrusted()
         canListenEvents = checkInputMonitoring()
+        onPermissionsChange?(self)
     }
 
     func requestPermission() {
@@ -56,8 +63,12 @@ final class AccessibilityManager: ObservableObject {
             Task { @MainActor in
                 let trusted = AXIsProcessTrusted()
                 let listen = self.checkInputMonitoring()
-                if trusted != self.isTrusted { self.isTrusted = trusted }
-                if listen != self.canListenEvents { self.canListenEvents = listen }
+                let changed = trusted != self.isTrusted || listen != self.canListenEvents
+                self.isTrusted = trusted
+                self.canListenEvents = listen
+                if changed {
+                    self.onPermissionsChange?(self)
+                }
                 if trusted && listen {
                     self.stopPolling()
                 }
@@ -69,35 +80,4 @@ final class AccessibilityManager: ObservableObject {
         pollingTimer?.invalidate()
         pollingTimer = nil
     }
-
-    // MARK: - AXError helpers
-
-    /// Returns true when an AXError indicates that AX permission has been
-    /// revoked system-wide (kAXErrorAPIDisabled).
-    static func isPermissionLoss(_ error: AXError) -> Bool {
-        error == .apiDisabled
-    }
-
-    /// Returns true when an AXError indicates the UI element is no longer valid
-    /// (window closed, app quit, etc.).
-    static func isInvalidElement(_ error: AXError) -> Bool {
-        error == .invalidUIElement || error == .invalidUIElementObserver
-    }
-
-    /// Classifies an AXError into a user-facing category.
-    static func classify(_ error: AXError) -> AXErrorCategory {
-        if isPermissionLoss(error)  { return .permissionLost }
-        if isInvalidElement(error)  { return .elementInvalid }
-        if error == .success        { return .none }
-        return .other(error)
-    }
-}
-
-// MARK: - AXErrorCategory
-
-enum AXErrorCategory: Sendable {
-    case none
-    case permissionLost
-    case elementInvalid
-    case other(AXError)
 }

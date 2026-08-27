@@ -61,8 +61,8 @@ private struct LayoutEditor: View {
 
             HStack(alignment: .top, spacing: 16) {
                 VStack(spacing: 6) {
-                    dimensionRow(label: "Rows", value: $rows)
-                    dimensionRow(label: "Cols", value: $cols)
+                    dimensionRow(label: "Rows",    value: $rows)
+                    dimensionRow(label: "Columns", value: $cols)
                 }
                 .frame(width: 150)
 

@@ -1,13 +1,13 @@
 @preconcurrency import Cocoa
 
-/// Routes key-down events to saved `Snapshot`s. Match happens in the
-/// `CGEventTap` callback via `SnapshotStore.lookup` (lock-protected),
+/// Routes key-down events to saved `Snap`s. Match happens in the
+/// `CGEventTap` callback via `SnapStore.lookup` (lock-protected),
 /// then the actual window move hops to the main actor.
 ///
 /// Lifecycle: `DragCoordinator.start()` calls `wire(to:)` — this installs
 /// the keyboard handler on the shared `EventMonitor` and starts the
-/// `TextFocusMonitor` / `FocusedWindowCache` helpers. `DragCoordinator.stop()`
-/// calls `unwire(from:)` to tear those down symmetrically.
+/// `FocusedWindowCache` helper. `DragCoordinator.stop()` calls
+/// `unwire(from:)` to tear those down symmetrically.
 final class CustomSnapCoordinator: @unchecked Sendable {
 
     static let shared = CustomSnapCoordinator()
@@ -17,7 +17,6 @@ final class CustomSnapCoordinator: @unchecked Sendable {
     // MARK: - Wiring
 
     func wire(to monitor: EventMonitor) {
-        TextFocusMonitor.shared.start()
         FocusedWindowCache.shared.start()
         monitor.keyboardHandler = { [weak self] keyCode, modifiers in
             guard let self else { return false }
@@ -29,7 +28,6 @@ final class CustomSnapCoordinator: @unchecked Sendable {
     func unwire(from monitor: EventMonitor) {
         monitor.keyboardHandler = nil
         FocusedWindowCache.shared.stop()
-        TextFocusMonitor.shared.stop()
     }
 
     // MARK: - Event-tap entry
@@ -38,24 +36,33 @@ final class CustomSnapCoordinator: @unchecked Sendable {
     /// to pass it through. Runs on the tap callback thread — every branch
     /// must return within the ~1 ms budget.
     private func shouldSuppress(keyCode: Int64, modifiers: PressedModifiers) -> Bool {
-        guard UserDefaults.standard.object(forKey: "isEnabled") as? Bool ?? true else {
-            return false
-        }
+        guard !PauseState.isPaused else { return false }
         // macOS flips the fn bit on arrow-key events even when the user
         // hasn't touched fn; strip it so stored shortcuts match.
         let normalized = modifiers.subtracting(.function)
-        guard let snapshot = SnapshotLookupMirror.shared.lookup(
-            keyCode: keyCode, modifiers: normalized
-        ) else {
+        // Only log modifier-bearing keyDowns — plain typing is not a
+        // snap candidate and would flood the trace.
+        let diag = !normalized.isEmpty
+
+        // Settings' KeyRecorder needs the raw key event. Yield so the
+        // recorded combo doesn't trigger a previously-bound snap.
+        if ShortcutRecordingGate.shared.isRecording {
+            if diag { debugLog("[snap] key=\(keyCode) mods=\(normalized.formatted) gate=recording → pass") }
             return false
         }
-        // Yield to text input so users can still type, select words
-        // with ⇧⌥Arrow, etc. sniq deliberately loses this race.
-        if TextFocusMonitor.shared.isTextFocused { return false }
-        guard let window = FocusedWindowCache.shared.focusedWindow else { return false }
-
+        guard let snap = SnapLookupMirror.shared.lookup(
+            keyCode: keyCode, modifiers: normalized
+        ) else {
+            if diag { debugLog("[snap] key=\(keyCode) mods=\(normalized.formatted) → no match, pass") }
+            return false
+        }
+        guard let window = FocusedWindowCache.shared.focusedWindow else {
+            debugLog("[snap] key=\(keyCode) mods=\(normalized.formatted) matched→\(snap.spec.summary) no-focus-window → pass")
+            return false
+        }
+        debugLog("[snap] key=\(keyCode) mods=\(normalized.formatted) matched→\(snap.spec.summary) → suppress")
         DispatchQueue.main.async(qos: .userInteractive) { [weak self] in
-            self?.performSnap(snapshot: snapshot, window: window)
+            self?.performSnap(snap: snap, window: window)
         }
         return true
     }
@@ -63,14 +70,32 @@ final class CustomSnapCoordinator: @unchecked Sendable {
     // MARK: - Snap execution (main actor)
 
     @MainActor
-    private func performSnap(snapshot: Snapshot, window: AXUIElement) {
+    private func performSnap(snap: Snap, window: AXUIElement) {
         guard let currentFrame = FocusedWindowDetector.frame(of: window) else {
             FocusedWindowCache.shared.invalidate()
             return
         }
         guard let screen = FocusedWindowDetector.screen(containing: currentFrame) else { return }
+        guard var target = targetRect(for: snap.spec, on: screen) else { return }
 
-        let spec = snapshot.spec
+        // Repeat-press cycling on strip grids (1×n / n×1): when the
+        // window already sits at any placement of this snap's ring,
+        // advance one step in the snap's anchored direction (a left/top
+        // snap keeps moving left/up, wrapping to the far end).
+        let ringRects = snap.spec.stripCycle().compactMap { targetRect(for: $0, on: screen) }
+        if ringRects.count > 1,
+           let position = ringRects.firstIndex(where: { currentFrame.isApproximatelyEqual(to: $0) }) {
+            target = ringRects[(position + 1) % ringRects.count]
+        }
+
+        WindowManipulator.shared.setFrame(target, for: window)
+    }
+
+    /// Resolves a spec's region to screen coordinates using the user's
+    /// current gap/padding. Returns `nil` when the spec's cells fall
+    /// outside its own grid (corrupt import, hand-edited file).
+    @MainActor
+    private func targetRect(for spec: SnapSpec, on screen: NSScreen) -> CGRect? {
         let prefs = PreferencesStore.shared
         let config = GridConfiguration(
             rows: spec.rows,
@@ -86,12 +111,9 @@ final class CustomSnapCoordinator: @unchecked Sendable {
             spec.maxCell.row < cells.count,
             !cells.isEmpty,
             spec.maxCell.col < cells[0].count
-        else { return }
+        else { return nil }
 
-        let topLeft     = cells[spec.minCell.row][spec.minCell.col]
-        let bottomRight = cells[spec.maxCell.row][spec.maxCell.col]
-        let targetRect  = topLeft.union(bottomRight)
-
-        WindowManipulator.shared.setFrame(targetRect, for: window)
+        return cells[spec.minCell.row][spec.minCell.col]
+            .union(cells[spec.maxCell.row][spec.maxCell.col])
     }
 }

@@ -149,7 +149,7 @@ struct ModifierBindingView: View {
 
 /// Pressable keycap button that flips `isOn` on click. Accent-filled
 /// when on, neutral-outlined when off. Matches the look of `KeycapView`
-/// used elsewhere in Settings / Snapshots.
+/// used elsewhere in Settings / Snaps.
 private struct ModifierCap: View {
 
     let symbol: String

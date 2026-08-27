@@ -50,32 +50,4 @@ struct SnapResolver {
 
         return GridCell(row: row, col: col)
     }
-
-    // MARK: - Multi-cell region
-
-    /// Returns the union CGRect of all cells in the rectangle defined by the two corner cells.
-    /// - Parameters:
-    ///   - from: One corner of the desired region.
-    ///   - to: The opposite corner.
-    /// - Returns: Union of the bounding cell rects, or `nil` when `cells` is empty.
-    func region(from: GridCell, to: GridCell) -> CGRect? {
-        guard rows > 0, cols > 0 else { return nil }
-
-        let minRow = min(from.row, to.row)
-        let maxRow = min(max(from.row, to.row), rows - 1)
-        let minCol = min(from.col, to.col)
-        let maxCol = min(max(from.col, to.col), cols - 1)
-
-        let topLeft     = cells[minRow][minCol]
-        let bottomRight = cells[maxRow][maxCol]
-
-        return topLeft.union(bottomRight)
-    }
-
-    /// Convenience: region from cursor drag start to cursor drag end.
-    func region(from startCursor: CGPoint, to endCursor: CGPoint) -> CGRect? {
-        guard let startCell = cell(at: startCursor),
-              let endCell   = cell(at: endCursor) else { return nil }
-        return region(from: startCell, to: endCell)
-    }
 }

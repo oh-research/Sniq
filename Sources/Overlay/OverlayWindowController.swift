@@ -42,14 +42,7 @@ final class OverlayWindowController {
 
     /// Highlights a single cell.
     func updateHighlight(cell: GridCell) {
-        overlayView?.highlightedCells = [cell]
-    }
-
-    /// Highlights an arbitrary set of cells (not necessarily contiguous).
-    /// Used by disambiguation to show all candidate cells when the
-    /// keyboard snap can't pick one deterministically.
-    func updateHighlight(cells set: Set<GridCell>) {
-        overlayView?.highlightedCells = set
+        overlayView?.highlightedRegion = .init(minCell: cell, maxCell: cell)
     }
 
     /// Highlights all cells in the rectangle spanned by `from` and `to`.
@@ -57,21 +50,13 @@ final class OverlayWindowController {
         guard let cells = overlayView?.gridCells,
               !cells.isEmpty else { return }
 
-        let rows = cells.count
-        let cols = cells[0].count
-
-        let minRow = min(from.row, to.row)
-        let maxRow = min(max(from.row, to.row), rows - 1)
-        let minCol = min(from.col, to.col)
-        let maxCol = min(max(from.col, to.col), cols - 1)
-
-        var highlighted = Set<GridCell>()
-        for r in minRow ... maxRow {
-            for c in minCol ... maxCol {
-                highlighted.insert(GridCell(row: r, col: c))
-            }
-        }
-        overlayView?.highlightedCells = highlighted
+        overlayView?.highlightedRegion = .init(
+            minCell: GridCell(row: min(from.row, to.row), col: min(from.col, to.col)),
+            maxCell: GridCell(
+                row: min(max(from.row, to.row), cells.count - 1),
+                col: min(max(from.col, to.col), cells[0].count - 1)
+            )
+        )
     }
 
     // MARK: - Private helpers

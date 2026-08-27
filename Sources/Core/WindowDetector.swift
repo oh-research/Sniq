@@ -9,16 +9,6 @@ struct WindowInfo: @unchecked Sendable {
     let title: String
     let axElement: AXUIElement
     let isFullscreen: Bool
-
-    /// True when the cursor Y is within `threshold` points of the window's top edge.
-    ///
-    /// The default of 80 covers title bar + toolbar for most apps (Finder, Safari,
-    /// Notes, etc.). macOS itself treats the toolbar area as draggable chrome, so
-    /// Sniq should honor user clicks in that region as drag-to-snap intent.
-    func isTitleBar(cursorY: CGFloat, threshold: CGFloat = 80) -> Bool {
-        let distFromTop = cursorY - frame.minY
-        return distFromTop >= 0 && distFromTop <= threshold
-    }
 }
 
 

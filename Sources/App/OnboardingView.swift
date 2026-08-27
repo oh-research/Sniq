@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 struct OnboardingView: View {
-    @ObservedObject private var accessibility = AccessibilityManager.shared
+    private let accessibility = AccessibilityManager.shared
     @ObservedObject private var preferences = PreferencesStore.shared
 
     var body: some View {
@@ -15,19 +15,19 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HowToRow(
                         icon: "arrow.up.and.down.and.arrow.left.and.right",
-                        text: "Hold Shift and drag anywhere on a window"
+                        text: "Hold Grip (\(preferences.bindings.grip.formatted)) and drag anywhere on a window"
                     )
                     HowToRow(
                         icon: "grid",
                         text: "A grid overlay appears on screen"
                     )
                     HowToRow(
-                        icon: "control",
-                        text: "Add Control to switch to the Secondary layout"
+                        icon: "rectangle.2.swap",
+                        text: "Add Flip (\(preferences.bindings.flip.formatted)) to switch to the Secondary layout"
                     )
                     HowToRow(
-                        icon: "option",
-                        text: "Add Option to select a multi-cell region"
+                        icon: "arrow.up.left.and.arrow.down.right",
+                        text: "Add Stretch (\(preferences.bindings.stretch.formatted)) to select a multi-cell region"
                     )
                     HowToRow(
                         icon: "arrow.down.to.line",
@@ -35,7 +35,7 @@ struct OnboardingView: View {
                     )
                     HowToRow(
                         icon: "escape",
-                        text: "Release Shift to cancel"
+                        text: "Release Grip to cancel"
                     )
                 }
                 .padding(.vertical, 4)
@@ -59,7 +59,7 @@ struct OnboardingView: View {
                 PermissionCardView(
                     icon: "keyboard",
                     title: "Input Monitoring",
-                    description: "Required to detect Shift + drag gestures",
+                    description: "Required to detect the Grip-drag gesture",
                     granted: accessibility.canListenEvents,
                     primaryAction: { accessibility.openInputMonitoringSettings() },
                     fallbackAction: nil
