@@ -69,6 +69,36 @@ final class CustomSnapCoordinator: @unchecked Sendable {
 
     // MARK: - Snap execution (main actor)
 
+    /// The most recent keyboard snap. Cycling is a repeat-press gesture:
+    /// only the same shortcut on the same window, still sitting where the
+    /// previous press put it, advances along the strip. Geometry alone
+    /// can't tell "already snapped left" from a full-size window that
+    /// merely shares the left edge, so a first press always lands on the
+    /// snap's own region.
+    private struct LastPlacement {
+        let snapID: UUID
+        let window: AXUIElement
+        let ringIndex: Int
+        let rect: CGRect
+
+        func isRepeat(of snap: Snap, on window: AXUIElement, currentFrame: CGRect) -> Bool {
+            // Match origin plus the cross-axis size only: an app whose
+            // minimum size exceeds one cell clamps the along-axis
+            // dimension, and a full-frame comparison would strand cycling.
+            let isHorizontalStrip = snap.spec.rows == 1
+            let crossAxisMatches = isHorizontalStrip
+                ? abs(currentFrame.height - rect.height) <= 2
+                : abs(currentFrame.width - rect.width) <= 2
+            return snapID == snap.id
+                && CFEqual(self.window, window)
+                && currentFrame.origin.isApproximatelyEqual(to: rect.origin)
+                && crossAxisMatches
+        }
+    }
+
+    @MainActor
+    private var lastPlacement: LastPlacement?
+
     @MainActor
     private func performSnap(snap: Snap, window: AXUIElement) {
         guard let currentFrame = FocusedWindowDetector.frame(of: window) else {
@@ -78,30 +108,20 @@ final class CustomSnapCoordinator: @unchecked Sendable {
         guard let screen = FocusedWindowDetector.screen(containing: currentFrame) else { return }
         guard var target = targetRect(for: snap.spec, on: screen) else { return }
 
-        // Repeat-press cycling on strip grids (1×n / n×1): when the
-        // window already sits at any placement of this snap's ring,
-        // advance one step in the snap's anchored direction (a left/top
-        // snap keeps moving left/up, wrapping to the far end).
-        //
-        // Slot occupancy matches origin plus the cross-axis size only:
-        // an app whose minimum size exceeds one cell clamps the along-
-        // axis dimension (e.g. width on a small screen's 1×3), and a
-        // full-frame comparison would strand cycling at the first slot.
+        // Repeat-press cycling on strip grids (1×n / n×1): advance one
+        // step in the snap's anchored direction (a left/top snap keeps
+        // moving left/up, wrapping to the far end).
+        var ringIndex = 0
         let ringRects = snap.spec.stripCycle().compactMap { targetRect(for: $0, on: screen) }
-        if ringRects.count > 1 {
-            let isHorizontalStrip = snap.spec.rows == 1
-            let position = ringRects.firstIndex { slot in
-                currentFrame.origin.isApproximatelyEqual(to: slot.origin)
-                    && (isHorizontalStrip
-                        ? abs(currentFrame.height - slot.height) <= 2
-                        : abs(currentFrame.width - slot.width) <= 2)
-            }
-            if let position {
-                target = ringRects[(position + 1) % ringRects.count]
-            }
+        if ringRects.count > 1,
+           let last = lastPlacement,
+           last.isRepeat(of: snap, on: window, currentFrame: currentFrame) {
+            ringIndex = (last.ringIndex + 1) % ringRects.count
+            target = ringRects[ringIndex]
         }
 
         WindowManipulator.shared.setFrame(target, for: window)
+        lastPlacement = LastPlacement(snapID: snap.id, window: window, ringIndex: ringIndex, rect: target)
     }
 
     /// Resolves a spec's region to screen coordinates using the user's
